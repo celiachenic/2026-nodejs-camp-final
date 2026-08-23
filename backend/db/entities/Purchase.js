@@ -14,16 +14,16 @@ module.exports = new EntitySchema({
       nullable: false,
     },
     //購買當下的價格
-    saved_price: {
+    price_paid: {
       type: "integer",
       nullable: false,
     },
     //購買當下的堂數
-    saved_credits: {
+    purchased_credits: {
       type: "integer",
       nullable: false,
     },
-    created_at: {
+    purchase_at: {
       type: "timestamptz",
       createDate: true,
     },

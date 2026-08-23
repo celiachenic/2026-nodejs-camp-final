@@ -11,6 +11,7 @@ module.exports = new EntitySchema({
     name: {
       type: "varchar",
       length: 50,
+      unique:true,
       nullable: false,
     },
     price: {

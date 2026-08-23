@@ -50,17 +50,17 @@ module.exports = new EntitySchema({
       target: "Course",
       inverseSide: "coach",
     },
-    specialties: {
+    skills: {
       type: "many-to-many",
-      target: "Specialty",
+      target: "Skill",
       joinTable: {
-        name: "coach_specialties",
+        name: "coach_skills",
         joinColumn: {
           name: "coach_id",
           referencedColumnName: "id",
         },
         inverseJoinColumn: {
-          name: "specialty_id",
+          name: "skill_id",
           referencedColumnName: "id",
         },
       },

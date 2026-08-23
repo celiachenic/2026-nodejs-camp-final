@@ -1,7 +1,7 @@
 const { EntitySchema } = require("typeorm");
 module.exports = new EntitySchema({
-  name: "Specialty",
-  tableName: "specialties",
+  name: "Skill",
+  tableName: "skills",
   columns: {
     id: {
       type: "uuid",
@@ -12,6 +12,7 @@ module.exports = new EntitySchema({
       type: "varchar",
       length: 50,
       nullable: false,
+      unique:true
     },
     created_at: {
       type: "timestamptz",
@@ -31,7 +32,7 @@ module.exports = new EntitySchema({
     coaches: {
       type: "many-to-many",
       target: "Coach",
-      inverseSide: "specialties",
+      inverseSide: "skills",
     },
   },
 });

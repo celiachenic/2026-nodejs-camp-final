@@ -25,6 +25,7 @@ module.exports = new EntitySchema({
       joinColumn: {
         name: "user_id",
       },
+      nullable: false,
     },
     course: {
       type: "many-to-one",
@@ -32,6 +33,7 @@ module.exports = new EntitySchema({
       joinColumn: {
         name: "course_id",
       },
+      nullable: false,
     },
   },
 });

@@ -53,13 +53,15 @@ module.exports = new EntitySchema({
       joinColumn: {
         name: "coach_id",
       },
+      nullable: false,
     },
-    specialty: {
+    skill: {
       type: "many-to-one",
-      target: "Specialty",
+      target: "Skill",
       joinColumn: {
-        name: "specialty_id",
+        name: "skill_id",
       },
+      nullable: false,
     },
   },
 });
