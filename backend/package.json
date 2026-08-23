@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon ./bin/www.js",
-    "start": "node ./bin/www.js"
+    "start": "node ./bin/www.js",
+    "migration:generate": "typeorm migration:generate -d ./db/dataSource.js -o",
+    "migration:show": "typeorm migration:show -d ./db/dataSource.js",
+    "migration:run": "typeorm migration:run -d ./db/dataSource.js",
+    "migration:revert": "typeorm migration:revert -d ./db/dataSource.js"
   },
   "keywords": [],
   "author": "",
