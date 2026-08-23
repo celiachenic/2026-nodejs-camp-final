@@ -9,7 +9,7 @@ const CourseSchema = require("../db/entities/Course");
 const PurchaseSchema = require("../db/entities/Purchase");
 const BookingSchema = require("../db/entities/Booking");
 
-const AppDataSource = new DataSource({
+const appDataSource = new DataSource({
   type: "postgres",
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
@@ -31,4 +31,4 @@ const AppDataSource = new DataSource({
   migrations: ["./db/migrations/*.js"],
 });
 
-module.exports = AppDataSource;
+module.exports = appDataSource;
