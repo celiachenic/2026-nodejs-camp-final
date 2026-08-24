@@ -46,11 +46,32 @@ const seedData = async () => {
     { name: "復健訓練" },
   ]);
 
-  const hashed_password = await bcrypt.hash(SEED_USER_PASSWORD,10);
-  const [user1, user2, user3] = await userRepo.save([
-    { name: "李燕容", email: "123@gamil.com", hashed_password, role: "USER" },
-    { name: "黃高高", email: "456@gamil.com", hashed_password, role: "USER" },
-    { name: "陳小明", email: "789@gamil.com", hashed_password, role: "USER" },
+  const hashed_password = await bcrypt.hash(SEED_USER_PASSWORD, 10);
+  const [user1, user2, user3, user4, user5] = await userRepo.save([
+    { name: "李燕容", email: "123@gmail.com", hashed_password, role: "COACH" },
+    { name: "黃高高", email: "456@gmail.com", hashed_password, role: "COACH" },
+    { name: "陳小明", email: "789@gmail.com", hashed_password, role: "USER" },
+    { name: "王小花", email: "101@gmail.com", hashed_password, role: "USER" },
+    { name: "蔡香香", email: "999@gmail.com", hashed_password, role: "USER" },
+  ]);
+
+  const [coach1, coach2] = await coachRepo.save([
+    {
+      user: user1,
+      skills: [yoga, recovery],
+      experience_years: 5,
+      description:
+        "李燕容教練擁有多年重量訓練與體態管理經驗，專注於協助學員建立正確的訓練觀念。課程會依照學員的體能狀況與訓練目標調整內容，從基礎動作到進階訓練循序漸進，幫助學員安全且有效地提升肌力與體能。",
+      profile_image_url: "https://example.com/avatar.png",
+    },
+    {
+      user: user2,
+      skills: [strength, recovery],
+      experience_years: 3,
+      description:
+        "具備豐富的功能性訓練與運動表現指導經驗，擅長透過多元訓練方式提升學員的肌力、穩定度與活動能力。課程中特別重視動作品質與訓練安全，並依照學員的進步狀況持續調整計畫，協助學員穩定達成各階段的健身目標。",
+      profile_image_url: "",
+    },
   ]);
 };
 
