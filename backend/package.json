@@ -10,7 +10,8 @@
     "migration:generate": "typeorm migration:generate -d ./db/dataSource.js -o",
     "migration:show": "typeorm migration:show -d ./db/dataSource.js",
     "migration:run": "typeorm migration:run -d ./db/dataSource.js",
-    "migration:revert": "typeorm migration:revert -d ./db/dataSource.js"
+    "migration:revert": "typeorm migration:revert -d ./db/dataSource.js",
+    "seed": "node ./db/seed.js"
   },
   "keywords": [],
   "author": "",
