@@ -8,6 +8,11 @@ module.exports = new EntitySchema({
       primary: true,
       generated: "uuid",
     },
+    name: {
+      type: "varchar",
+      length: 50,
+      nullable: false,
+    },
     email: {
       type: "varchar",
       length: 200,
@@ -22,11 +27,6 @@ module.exports = new EntitySchema({
       type: "varchar",
       length: 20,
       default: "USER",
-    },
-    name: {
-      type: "varchar",
-      length: 50,
-      nullable: false,
     },
     created_at: {
       type: "timestamptz",

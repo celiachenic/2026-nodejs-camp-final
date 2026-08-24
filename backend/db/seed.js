@@ -1,4 +1,6 @@
 const appDataSource = require("./dataSource");
+const bcrypt = require("bcrypt");
+const SEED_USER_PASSWORD = process.env.SEED_USER_PASSWORD;
 
 const PackageSchema = require("../db/entities/Package");
 const UserSchema = require("../db/entities/User");
@@ -42,6 +44,13 @@ const seedData = async () => {
     { name: "瑜珈" },
     { name: "重訓" },
     { name: "復健訓練" },
+  ]);
+
+  const hashed_password = await bcrypt.hash(SEED_USER_PASSWORD,10);
+  const [user1, user2, user3] = await userRepo.save([
+    { name: "李燕容", email: "123@gamil.com", hashed_password, role: "USER" },
+    { name: "黃高高", email: "456@gamil.com", hashed_password, role: "USER" },
+    { name: "陳小明", email: "789@gamil.com", hashed_password, role: "USER" },
   ]);
 };
 
