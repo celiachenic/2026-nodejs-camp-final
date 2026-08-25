@@ -59,7 +59,7 @@ const deleteSkill = async (req, res, next) => {
       return next(createError(400, "格式錯誤"));
     }
     const skillRepo = appDataSource.getRepository(skillSchema);
-    const result = await skillRepo.delete({ id: skillId });
+    const result = await skillRepo.softDelete({ id: skillId });
     if (result.affected !== 1) {
       return next(createError(400, "ID錯誤"));
     }
