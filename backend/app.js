@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const skillRouter = require("./routes/skillRouter");
+const errorHandler = require("./middlewares/errorHandler");
 const app = express();
 
 app.use(cors());
@@ -13,10 +14,5 @@ app.get("/healthcheck", (req, res) => {
 
 app.use("/api/coaches", skillRouter);
 
-app.use((err, req, res, next) => {
-  return res.status(500).json({
-    status: "failed",
-    message: err.message,
-  });
-});
+app.use(errorHandler)
 module.exports = app;
