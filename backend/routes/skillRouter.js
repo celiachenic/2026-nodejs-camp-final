@@ -5,6 +5,7 @@ const skillController = require('../controllers/skillController')
 
 router.get('/skill', skillController.getSkill);
 router.post('/skill', skillController.postSkill);
+router.delete('/skill/:skillId',skillController.deleteSkill)
 
 
 module.exports = router;

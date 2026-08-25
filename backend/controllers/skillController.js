@@ -1,6 +1,7 @@
 const appDataSource = require("../db/dataSource");
 const skillSchema = require("../db/entities/Skill");
 const createError = require("../utils/createError");
+const isUUid = require("../utils/isUuid");
 
 const getSkill = async (req, res, next) => {
   try {
@@ -51,7 +52,29 @@ const postSkill = async (req, res, next) => {
   }
 };
 
+const deleteSkill = async (req, res, next) => {
+  try {
+    const { skillId } = req.params;
+    if (!isUUid(skillId)) {
+      return next(createError(400, "格式錯誤"));
+    }
+    const skillRepo = appDataSource.getRepository(skillSchema);
+    const result = await skillRepo.delete({ id: skillId });
+    if (result.affected !== 1) {
+      return next(createError(400, "ID錯誤"));
+    }
+    return res.status(200).json({
+      status: "success",
+      data: null,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(createError(500, "技能刪除失敗"));
+  }
+};
+
 module.exports = {
   getSkill,
   postSkill,
+  deleteSkill,
 };
