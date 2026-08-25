@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const skillRouter = require("./routes/skillRouter");
+const packageRouter = require('./routes/packageRouter')
 const errorHandler = require("./middlewares/errorHandler");
 const app = express();
 
@@ -13,6 +14,6 @@ app.get("/healthcheck", (req, res) => {
 });
 
 app.use("/api/coaches", skillRouter);
-
+app.use("/api/credit-package", packageRouter);
 app.use(errorHandler)
 module.exports = app;
