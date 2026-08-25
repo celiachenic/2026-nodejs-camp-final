@@ -25,5 +25,49 @@ const getPackage = async (req, res, next) => {
   }
 };
 
+const postPackage = async (req, res, next) => {
+  try {
+    const { name, price, credit_amount } = req.body;
+    //400：任一欄位沒給；name 不是字串或為空；credit_amount 或 price 不是數字、是負數、或帶小數
+    if (
+      typeof name !== "string" ||
+      name.trim() === "" ||
+      typeof credit_amount !== "number" ||
+      credit_amount < 1 ||
+      !Number.isInteger(credit_amount) ||
+      typeof price !== "number" ||
+      price < 1 ||
+      !Number.isInteger(price)
+    ) {
+      return next(createError(400, "欄位未填寫正確"));
+    }
+    //409：name 與既有方案重複
+    const nameData = name.trim();
+    const packageRepo = appDataSource.getRepository(packageSchema);
 
-module.exports = { getPackage };
+    if (await packageRepo.findOneBy({ name: nameData })) {
+      return next(createError(409, "資料重複"));
+    }
+    const newPackage = await packageRepo.save({
+      name: nameData,
+      credit_amount,
+      price,
+    });
+
+    return res.status(200).json({
+      status: "success",
+      data: {
+        id: newPackage.id,
+        name: newPackage.name,
+        credit_amount: newPackage.credit_amount,
+        price: newPackage.price,
+        created_at: newPackage.created_at,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return next(createError(500, "方案新增失敗"));
+  }
+};
+
+module.exports = { getPackage, postPackage };
