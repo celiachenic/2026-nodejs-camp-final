@@ -1,5 +1,6 @@
 const appDataSource = require("../db/dataSource");
 const skillSchema = require("../db/entities/Skill");
+const createError = require("../utils/createError");
 
 const getSkill = async (req, res, next) => {
   try {
@@ -15,7 +16,7 @@ const getSkill = async (req, res, next) => {
     });
   } catch (error) {
     console.error(error);
-    return next(new Error("技能取得失敗"));
+    return next(createError(500, "技能取得失敗"));
   }
 };
 
@@ -25,18 +26,12 @@ const postSkill = async (req, res, next) => {
     //400：沒給 name、name 不是字串、或 name 是空字串／全空白
     const { name } = req.body;
     if (typeof name !== "string" || name.trim() === "") {
-      return res.status(400).json({
-        status: "failed",
-        message: "欄位未填寫正確",
-      });
+      return next(createError(400, "欄位未填寫正確"));
     }
     const nameData = name.trim();
     //409：name 與既有技能重複
     if (await skillRepo.findOneBy({ name: nameData })) {
-      return res.status(409).json({
-        status: "failed",
-        message: "資料重複",
-      });
+      return next(createError(409, "資料重複"));
     }
 
     const newSkill = await skillRepo.save({
@@ -52,7 +47,7 @@ const postSkill = async (req, res, next) => {
     });
   } catch (error) {
     console.error(error);
-    return next(new Error("技能新增失敗"));
+    return next(createError(500, "技能新增失敗"));
   }
 };
 
