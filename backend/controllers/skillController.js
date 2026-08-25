@@ -3,7 +3,7 @@ const skillSchema = require("../db/entities/Skill");
 const createError = require("../utils/createError");
 const isUUid = require("../utils/isUuid");
 
-const getSkill = async (req, res, next) => {
+const getSkills = async (req, res, next) => {
   try {
     const skillRepo = appDataSource.getRepository(skillSchema);
     const skills = await skillRepo.find();
@@ -74,7 +74,7 @@ const deleteSkill = async (req, res, next) => {
 };
 
 module.exports = {
-  getSkill,
+  getSkills,
   postSkill,
   deleteSkill,
 };

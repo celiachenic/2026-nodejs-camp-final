@@ -3,7 +3,7 @@ const packageSchema = require("../db/entities/Package");
 const createError = require("../utils/createError");
 const isUuid = require("../utils/isUuid");
 
-const getPackage = async (req, res, next) => {
+const getPackages = async (req, res, next) => {
   try {
     const packageRepo = appDataSource.getRepository(packageSchema);
     const packageArray = [];
@@ -92,4 +92,4 @@ const deletePackage = async (req, res, next) => {
   }
 };
 
-module.exports = { getPackage, postPackage, deletePackage };
+module.exports = { getPackages, postPackage, deletePackage };
