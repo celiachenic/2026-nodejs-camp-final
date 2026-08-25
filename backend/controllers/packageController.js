@@ -1,6 +1,7 @@
 const appDataSource = require("../db/dataSource");
 const packageSchema = require("../db/entities/Package");
 const createError = require("../utils/createError");
+const isUuid = require("../utils/isUuid");
 
 const getPackage = async (req, res, next) => {
   try {
@@ -70,4 +71,25 @@ const postPackage = async (req, res, next) => {
   }
 };
 
-module.exports = { getPackage, postPackage };
+const deletePackage = async (req, res, next) => {
+  try {
+    const { creditPackageId } = req.params;
+    if (!isUuid(creditPackageId)) {
+      return next(createError(400, "格式錯誤"));
+    }
+    const packageRepo = appDataSource.getRepository(packageSchema);
+    const result = await packageRepo.softDelete({ id: creditPackageId });
+    if (result.affected !== 1) {
+      return next(createError(400, "ID錯誤"));
+    }
+    return res.status(200).json({
+      status: "success",
+      data: null,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(createError(500, "方案刪除失敗"));
+  }
+};
+
+module.exports = { getPackage, postPackage, deletePackage };
