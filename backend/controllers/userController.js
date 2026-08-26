@@ -109,7 +109,7 @@ const login = async (req, res, next) => {
 };
 
 //取得個人資料
-// 需要經過 authMiddlware，即可從 req.user 取得 payload
+// 需要經過 authMiddlware，即可從 req.user 取得 user 資料
 const getProfile = async (req, res, next) => {
   try {
     const user = req.user; //經過驗證後取得的 user entity
@@ -129,6 +129,7 @@ const getProfile = async (req, res, next) => {
 };
 
 //更新目前登入者的暱稱（name）
+// 需要經過 authMiddlware，即可從 req.user 取得 user 資料
 const updateProfile = async (req, res, next) => {
   try {
     const user = req.user;
@@ -163,4 +164,72 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { signUp, login, getProfile, updateProfile };
+//更新密碼
+const updatePassword = async (req, res, next) => {
+  try {
+    const { password, new_password, confirm_new_password } = req.body;
+    //三個欄位任一缺漏或為空字串 → 400「欄位未填寫正確」
+    if (
+      typeof password !== "string" ||
+      password.trim() === "" ||
+      typeof new_password !== "string" ||
+      new_password.trim() === "" ||
+      typeof confirm_new_password !== "string" ||
+      confirm_new_password.trim() === ""
+    ) {
+      return next(createError(400, "欄位未填寫正確"));
+    }
+
+    const passwordData = password.trim();
+    const new_passwordData = new_password.trim();
+    const confirm_new_passwordData = confirm_new_password.trim();
+    // 三個欄位「全部」都要通過密碼規則
+    if (
+      !passwordValidator(passwordData) ||
+      !passwordValidator(new_passwordData) ||
+      !passwordValidator(confirm_new_passwordData)
+    ) {
+      return next(
+        createError(
+          400,
+          "密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字",
+        ),
+      );
+    }
+    //新舊密碼不能相同
+    if (passwordData === new_passwordData) {
+      return next(createError(400, "新密碼不能與舊密碼相同"));
+    }
+    //新密碼和驗證新密碼需相同
+    if (new_passwordData !== confirm_new_passwordData) {
+      return next(createError(400, "新密碼與驗證新密碼不一致"));
+    }
+    // 確認輸入的舊密碼是否正確
+    const user = req.user;
+    const isMatch = await bcrypt.compare(passwordData, user.hashed_password);
+    if (!isMatch) {
+      return next(createError(400, "密碼輸入錯誤"));
+    }
+    const newHashedPassword = await bcrypt.hash(new_passwordData, 10);
+    const userRepo = appDataSource.getRepository(userSchema);
+    const result = await userRepo.update(
+      { id: user.id },
+      {
+        hashed_password: newHashedPassword,
+      },
+    );
+
+    if (result.affected !== 1) {
+      return next(createError(500, "修改密碼失敗"));
+    }
+    return res.status(200).json({
+      status: "success",
+      data: null,
+    });
+    // 成功 200，data 是 null（沒有任何資料要回）。
+  } catch (error) {
+    console.error(error);
+    return next(createError(500, "修改密碼失敗"));
+  }
+};
+module.exports = { signUp, login, getProfile, updateProfile, updatePassword };
