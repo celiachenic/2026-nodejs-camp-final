@@ -5,6 +5,8 @@ const emailValidator = require("../utils/emailValidator");
 const passwordValidator = require("../utils/passwordValidator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
+//註冊
 const signUp = async (req, res, next) => {
   try {
     const { email, name, password } = req.body;
@@ -61,6 +63,7 @@ const signUp = async (req, res, next) => {
   }
 };
 
+//登入
 const login = async (req, res, next) => {
   try {
     const emailData = req.body?.email?.trim()?.toLowerCase();
@@ -104,4 +107,25 @@ const login = async (req, res, next) => {
     return next(createError(500, "登入失敗"));
   }
 };
-module.exports = { signUp, login };
+
+//取得個人資料
+// 需要經過 authMiddlware，即可從 req.user 取得 payload
+const getProfile = async (req, res, next) => {
+  try {
+    const user = req.user; //經過驗證後取得的 user entity
+    return res.status(200).json({
+      status: "success",
+      data: {
+        user: {
+          name: user.name,
+          email: user.email,
+        },
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return next(createError(500, "取得個人檔案失敗"));
+  }
+};
+
+module.exports = { signUp, login, getProfile };
