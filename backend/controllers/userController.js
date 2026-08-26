@@ -128,4 +128,39 @@ const getProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { signUp, login, getProfile };
+//更新目前登入者的暱稱（name）
+const updateProfile = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const nameInput = req.body.name;
+    if (typeof nameInput !== "string" || nameInput.trim() === "") {
+      return next(createError(400, "欄位未填寫正確"));
+    }
+    //設計資料庫時有在 user entity 中限制 name 長度不大於 50
+    if (nameInput.trim().length > 50) {
+      return next(createError(400, "長度需小於 50 字"));
+    }
+    const nameData = nameInput.trim();
+    if (user.name === nameData) {
+      return next(createError(400, "使用者名稱未變更"));
+    }
+    const userRepo = appDataSource.getRepository(userSchema);
+    const result = await userRepo.update({ id: user.id }, { name: nameData });
+    if (result.affected !== 1) {
+      return next(createError(400, "更新使用者資料失敗"));
+    }
+    return res.status(200).json({
+      status: "success",
+      data: {
+        user: {
+          name: nameData,
+        },
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return next(createError(500, "更改暱稱失敗"));
+  }
+};
+
+module.exports = { signUp, login, getProfile, updateProfile };
