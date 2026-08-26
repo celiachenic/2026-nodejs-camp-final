@@ -4,6 +4,7 @@ const createError = require("../utils/createError");
 const emailValidator = require("../utils/emailValidator");
 const passwordValidator = require("../utils/passwordValidator");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const signUp = async (req, res, next) => {
   try {
     const { email, name, password } = req.body;
@@ -59,4 +60,48 @@ const signUp = async (req, res, next) => {
     return next(createError(500, "註冊失敗"));
   }
 };
-module.exports = { signUp };
+
+const login = async (req, res, next) => {
+  try {
+    const emailData = req.body?.email?.trim()?.toLowerCase();
+    const passwordData = req.body?.password?.trim();
+    //先檢查欄位與密碼規則
+    if (!emailValidator(emailData) || !passwordValidator(passwordData)) {
+      return next(createError(400, "輸入格式錯誤"));
+    }
+    const userRepo = appDataSource.getRepository(userSchema);
+    const user = await userRepo.findOneBy({ email: emailData });
+    //帳號不存在
+    if (!user) {
+      return next(createError(400, "使用者不存在或密碼輸入錯誤"));
+    }
+    //密碼錯誤
+    const isMatch = await bcrypt.compare(passwordData, user.hashed_password);
+    if (!isMatch) {
+      return next(createError(400, "使用者不存在或密碼輸入錯誤"));
+    }
+    //登入成功後建立 payload，搭配 SECRET 產生 token
+    const payload = {
+      id: user.id,
+      role: user.role,
+    };
+
+    const SECRET = process.env.JWT_SECRET;
+    const expiresDay = process.env.JWT_EXPIRES_DAY;
+    const token = jwt.sign(payload, SECRET, { expiresIn: expiresDay });
+
+    return res.status(201).json({
+      status: "success",
+      data: {
+        token,
+        user: {
+          name: user.name,
+        },
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return next(createError(500, "登入失敗"));
+  }
+};
+module.exports = { signUp, login };
