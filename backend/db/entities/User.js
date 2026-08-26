@@ -48,5 +48,10 @@ module.exports = new EntitySchema({
       target: "Purchase",
       inverseSide: "user",
     },
+    bookings: {
+      type: "one-to-many",
+      target: "Booking",
+      inverseSide: "user",
+    },
   },
 });
