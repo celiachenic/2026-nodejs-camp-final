@@ -4,6 +4,7 @@ const userSchema = require("../db/entities/User");
 const coachSchema = require("../db/entities/Coach");
 const isUuid = require("../utils/isUuid");
 
+//升級使用者成教練
 const updateUserToCoach = async (req, res, next) => {
   try {
     const { userId } = req.params;
@@ -79,9 +80,42 @@ const updateUserToCoach = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return next(createError(500, "升級失敗"));
   }
 };
 
-module.exports = { updateUserToCoach };
+//取得教練本人後台資料
+const getProfile = async (req, res, next) => {
+  try {
+    const coach = req.coach;
+    const coachRepo = appDataSource.getRepository(coachSchema);
+    const coachData = await coachRepo.findOne({
+      where: {
+        id: coach.id,
+      },
+      relations: { skills: true },
+    });
+    if (!coachData) {
+      return next(createError(500, "教練查詢失敗"));
+    }
+    const { id, experience_years, description, profile_image_url } = coachData;
+
+    const skill_ids = coachData.skills.map((skill) => skill.id);
+    return res.status(200).json({
+      status: "success",
+      data: {
+        id,
+        experience_years,
+        description,
+        profile_image_url,
+        skill_ids,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return next(createError(500, "教練查詢失敗"));
+  }
+};
+
+module.exports = { updateUserToCoach, getProfile };
