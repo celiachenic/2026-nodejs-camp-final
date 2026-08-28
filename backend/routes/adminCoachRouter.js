@@ -11,4 +11,5 @@ router.put(
   requireCoach,
   adminCoachController.updateProfile,
 );
+router.get('/courses',authMiddleware,requireCoach,adminCoachController.getCoachCourses)
 module.exports = router;

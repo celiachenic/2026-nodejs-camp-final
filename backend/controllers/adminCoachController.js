@@ -3,7 +3,10 @@ const appDataSource = require("../db/dataSource");
 const userSchema = require("../db/entities/User");
 const coachSchema = require("../db/entities/Coach");
 const skillSchema = require("../db/entities/Skill");
+const courseSchema = require("../db/entities/Course");
+const bookingSchema = require("../db/entities/Booking");
 const isUuid = require("../utils/isUuid");
+const { IsNull } = require("typeorm");
 
 //升級使用者成教練
 const updateUserToCoach = async (req, res, next) => {
@@ -175,9 +178,70 @@ const updateProfile = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return next(createError(500, "更新教練資料失敗"));
   }
 };
 
-module.exports = { updateUserToCoach, getProfile, updateProfile };
+//取得教練所有課程
+const getCoachCourses = async (req, res, next) => {
+  try {
+    const coach = req.coach;
+    const courseRepo = appDataSource.getRepository(courseSchema);
+    const courses = await courseRepo.find({
+      where: { coach: { id: coach.id } },
+    });
+    if (courses.length === 0) {
+      return res.status(200).json({
+        status: "success",
+        data: courses,
+      });
+    }
+
+    const bookingRepo = appDataSource.getRepository(bookingSchema);
+    const returnCourses = await Promise.all(
+      courses.map(async (course) => {
+        const returnCourse = {
+          id: course.id,
+          name: course.name,
+          start_at: course.start_at,
+          end_at: course.end_at,
+          max_participants: course.max_participants,
+          meeting_url: course.meeting_url,
+        };
+        const now = Date.now();
+        const startAt = new Date(course.start_at).getTime();
+        const endAt = new Date(course.end_at).getTime();
+        if (now < startAt) {
+          returnCourse.status = "尚未開始";
+        } else if (now >= startAt && now <= endAt) {
+          returnCourse.status = "進行中";
+        } else {
+          returnCourse.status = "已結束";
+        }
+
+        const bookings = await bookingRepo.find({
+          where: { course: { id: course.id }, cancelled_at: IsNull() },
+        });
+        const participants = bookings.length;
+        returnCourse.participants = participants;
+        return returnCourse;
+      }),
+    );
+    console.log(returnCourses);
+    return res.status(200).json({
+      status: "success",
+      data: returnCourses,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(createError(500, "取得課程失敗"));
+  }
+};
+
+module.exports = {
+  updateUserToCoach,
+  getProfile,
+  updateProfile,
+  getCoachCourses,
+};
