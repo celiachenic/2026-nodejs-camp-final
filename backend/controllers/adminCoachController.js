@@ -6,6 +6,7 @@ const skillSchema = require("../db/entities/Skill");
 const courseSchema = require("../db/entities/Course");
 const bookingSchema = require("../db/entities/Booking");
 const isUuid = require("../utils/isUuid");
+const isUtcIsoString = require("../utils/isUtcIsoString");
 const { IsNull } = require("typeorm");
 
 //升級使用者成教練
@@ -239,9 +240,78 @@ const getCoachCourses = async (req, res, next) => {
   }
 };
 
+//教練開新課程
+const openCourse = async (req, res, next) => {
+  try {
+    const coach = req.coach;
+
+    const {
+      skill_id,
+      name,
+      description,
+      start_at,
+      end_at,
+      max_participants,
+      meeting_url,
+    } = req.body;
+    if (
+      !isUuid(skill_id) ||
+      typeof name !== "string" ||
+      name.trim() === "" ||
+      typeof description !== "string" ||
+      description.trim() === "" ||
+      !Number.isInteger(max_participants) ||
+      max_participants < 1 ||
+      typeof meeting_url !== "string" ||
+      !meeting_url.startsWith("https://")
+    ) {
+      return next(createError(400, "欄位未填寫正確"));
+    }
+    // start_at／end_at 收 UTC ISO 8601 字串（例 2026-08-20T10:00:00Z），原樣存入、原樣吐回。
+    if (!isUtcIsoString(start_at) || !isUtcIsoString(end_at)) {
+      return next(createError(400, "欄位未填寫正確"));
+    }
+
+    const startTimestamp = new Date(start_at).getTime();
+    const endTimestamp = new Date(end_at).getTime();
+    if (startTimestamp >= endTimestamp) {
+      return next(createError(400, "欄位未填寫正確"));
+    }
+    const skillRepo = appDataSource.getRepository(skillSchema);
+    const skill = await skillRepo.findOneBy({
+      id: skill_id,
+    });
+    if (!skill) {
+      return next(createError(400, "欄位未填寫正確"));
+    }
+
+    const courseRepo = appDataSource.getRepository(courseSchema);
+    const newCourse = await courseRepo.save({
+      name:name.trim(),
+      description:description.trim(),
+      start_at,
+      end_at,
+      max_participants,
+      meeting_url:meeting_url.trim(),
+      skill: { id: skill.id },
+      coach: { id: coach.id },
+    });
+    return res.status(201).json({
+      status: "success",
+      data: {
+        course: newCourse,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return next(createError(500, "新增課程失敗"));
+  }
+};
+
 module.exports = {
   updateUserToCoach,
   getProfile,
   updateProfile,
   getCoachCourses,
+  openCourse,
 };
