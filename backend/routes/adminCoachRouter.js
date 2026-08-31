@@ -29,10 +29,11 @@ router.get(
   authMiddleware,
   adminCoachController.getCoachCourse,
 );
-// router.put(
-//   "/courses/:courseId",
-//   authMiddleware,
-//   adminCoachController.updateCoachCourse,
-// );
+
+router.put(
+  "/courses/:courseId",
+  authMiddleware,
+  adminCoachController.updateCoachCourse,
+);
 
 module.exports = router;

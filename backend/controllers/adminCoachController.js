@@ -118,7 +118,7 @@ const getProfile = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return next(createError(500, "教練查詢失敗"));
   }
 };
@@ -229,7 +229,6 @@ const getCoachCourses = async (req, res, next) => {
         return returnCourse;
       }),
     );
-    console.log(returnCourses);
     return res.status(200).json({
       status: "success",
       data: returnCourses,
@@ -352,81 +351,81 @@ const getCoachCourse = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return next(createError(500, "查詢課程失敗"));
   }};
 
 // 更新單堂開課資料
-// const updateCoachCourse = async (req, res, next) => {
-//   try {
-//     const user = req.user;
-//     const { courseId } = req.params;
-//     const {
-//       skill_id,
-//       name,
-//       description,
-//       start_at,
-//       end_at,
-//       max_participants,
-//       meeting_url,
-//     } = req.body;
+ const updateCoachCourse = async (req, res, next) => {
+   try {
+     const user = req.user;
+     const { courseId } = req.params;
+    const {
+      skill_id,
+      name,
+      description,
+      start_at,
+      end_at,
+      max_participants,
+      meeting_url,
+    } = req.body;
 
-//     if (
-//       !isUuid(courseId) ||
-//       !isUuid(skill_id) ||
-//       typeof name !== "string" ||
-//       name.trim() === "" ||
-//       typeof description !== "string" ||
-//       description.trim() === "" ||
-//       !isUtcIsoString(start_at) ||
-//       !isUtcIsoString(end_at) ||
-//       !Number.isInteger(max_participants) ||
-//       max_participants < 0 ||
-//       typeof meeting_url !== "string" ||
-//       !meeting_url.startsWith("https://")
-//     ) {
-//       return next(createError(400, "欄位未填寫正確"));
-//     }
+    if (
+      !isUuid(courseId) ||
+      !isUuid(skill_id) ||
+      typeof name !== "string" ||
+      name.trim() === "" ||
+      typeof description !== "string" ||
+      description.trim() === "" ||
+      !isUtcIsoString(start_at) ||
+      !isUtcIsoString(end_at) ||
+      !Number.isInteger(max_participants) ||
+      max_participants < 0 ||
+      typeof meeting_url !== "string" ||
+      !meeting_url.startsWith("https://")
+    ) {
+      return next(createError(400, "欄位未填寫正確"));
+    }
 
-//     if (new Date(start_at).getTime() >= new Date(end_at).getTime()) {
-//       return next(createError(400, "欄位未填寫正確"));
-//     }
+    if (new Date(start_at).getTime() >= new Date(end_at).getTime()) {
+      return next(createError(400, "欄位未填寫正確"));
+    }
 
-//     const courseRepo = appDataSource.getRepository(courseSchema);
-//     const course = await courseRepo.findOne({
-//       where: { id: courseId, coach: { user: { id: user.id } } },
-//     });
-//     if (!course) {
-//       return next(createError(400, "課程不存在"));
-//     }
+    const courseRepo = appDataSource.getRepository(courseSchema);
+    const course = await courseRepo.findOne({
+      where: { id: courseId, coach: { user: { id: user.id } } },
+    });
+    if (!course) {
+      return next(createError(400, "課程不存在"));
+    }
 
-//     const skillRepo = appDataSource.getRepository(skillSchema);
-//     const skill = await skillRepo.findOneBy({ id: skill_id });
-//     if (!skill) {
-//       return next(createError(400, "欄位未填寫正確"));
-//     }
+    const skillRepo = appDataSource.getRepository(skillSchema);
+    const skill = await skillRepo.findOneBy({ id: skill_id });
+    if (!skill) {
+      return next(createError(400, "欄位未填寫正確"));
+    }
 
-//     course.name = name.trim();
-//     course.description = description.trim();
-//     course.start_at = start_at;
-//     course.end_at = end_at;
-//     course.max_participants = max_participants;
-//     course.meeting_url = meeting_url.trim();
-//     course.skill = skill;
+    course.name = name.trim();
+    course.description = description.trim();
+    course.start_at = start_at;
+    course.end_at = end_at;
+    course.max_participants = max_participants;
+    course.meeting_url = meeting_url.trim();
+    course.skill = skill;
 
-//     const updatedCourse = await courseRepo.save(course);
+    const updatedCourse = await courseRepo.save(course);
 
-//     return res.status(200).json({
-//       status: "success",
-//       data: {
-//         course: updatedCourse,
-//       },
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     return next(createError(500, "更新課程失敗"));
-//   }
-// };
+    return res.status(200).json({
+      status: "success",
+      data: {
+        course: updatedCourse,
+      },
+    });
+   } catch (error) {
+    console.error(error)
+     return next(createError(500, "更新課程失敗"));
+   }
+ };
 
 module.exports = {
   updateUserToCoach,
@@ -435,5 +434,5 @@ module.exports = {
   getCoachCourses,
   openCourse,
   getCoachCourse,
- // updateCoachCourse,
+  updateCoachCourse,
 };
