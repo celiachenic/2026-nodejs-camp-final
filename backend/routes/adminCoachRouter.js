@@ -24,4 +24,15 @@ router.get(
   adminCoachController.getCoachCourses,
 );
 
+router.get(
+  "/courses/:courseId",
+  authMiddleware,
+  adminCoachController.getCoachCourse,
+);
+// router.put(
+//   "/courses/:courseId",
+//   authMiddleware,
+//   adminCoachController.updateCoachCourse,
+// );
+
 module.exports = router;
