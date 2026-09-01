@@ -4,6 +4,7 @@ const skillRouter = require("./routes/skillRouter");
 const packageRouter = require("./routes/packageRouter");
 const userRouter = require("./routes/userRouter");
 const adminCoachRouter = require("./routes/adminCoachRouter");
+const publicRouter = require("./routes/publicRouter");
 const errorHandler = require("./middlewares/errorHandler");
 const app = express();
 
@@ -19,5 +20,7 @@ app.use("/api/coaches", skillRouter);
 app.use("/api/credit-package", packageRouter);
 app.use("/api/users", userRouter);
 app.use("/api/admin/coaches", adminCoachRouter);
+app.use("/api/coaches", publicRouter);
+app.use("/api/courses", publicRouter);
 app.use(errorHandler);
 module.exports = app;
