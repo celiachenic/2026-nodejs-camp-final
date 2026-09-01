@@ -104,11 +104,52 @@ const getCoach = async (req, res, next) => {
 };
 
 //取得指定教練未結束的課程列表
-// const getCoachCourses = async (req, res, next) => {
-//   try {
-//   } catch (error) {
-//     console.error(error);
-//     return next(createError(500, "取得指定教練未結束的課程列表失敗"));
-//   }
-// };
+const getCoachCourses = async (req, res, next) => {
+  try {
+    const { coachId } = req.params;
+    if (typeof coachId !== "string" || coachId.trim() === "") {
+      return next(createError(400, "欄位未填寫正確"));
+    }
+
+    if (!isUuid(coachId)) {
+      return next(createError(400, "找不到該教練"));
+    }
+    const coachRepo = appDataSource.getRepository(coachSchema);
+    const coach = await coachRepo.findOne({
+      where: { id: coachId },
+      relations: { user: true, courses: { skill: true } },
+    });
+    if (!coach) {
+      return next(createError(400, "找不到該教練"));
+    }
+
+    const { courses } = coach;
+    const coursesArray = [];
+    for (const course of courses) {
+      const { id, name, description, start_at, end_at, max_participants } =
+        course;
+      const coach_name = coach.user.name;
+      const skill_name = course.skill.name;
+      if (new Date(end_at).getTime() > Date.now()) {
+        coursesArray.push({
+          id,
+          name,
+          description,
+          start_at,
+          end_at,
+          max_participants,
+          coach_name,
+          skill_name,
+        });
+      }
+    }
+    return res.status(200).json({
+      status: "success",
+      data: coursesArray,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(createError(500, "取得指定教練未結束的課程列表失敗"));
+  }
+};
 module.exports = { getCoaches, getCoach, getCoachCourses };
