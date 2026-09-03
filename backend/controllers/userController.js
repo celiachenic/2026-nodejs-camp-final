@@ -1,5 +1,6 @@
 const appDataSource = require("../db/dataSource");
 const userSchema = require("../db/entities/User");
+const purchaseSchema = require("../db/entities/Purchase");
 const createError = require("../utils/createError");
 const emailValidator = require("../utils/emailValidator");
 const passwordValidator = require("../utils/passwordValidator");
@@ -232,4 +233,40 @@ const updatePassword = async (req, res, next) => {
     return next(createError(500, "修改密碼失敗"));
   }
 };
-module.exports = { signUp, login, getProfile, updateProfile, updatePassword };
+
+//獲取購買紀錄
+const getCreditPackages = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const purchaseRepo = appDataSource.getRepository(purchaseSchema);
+    const purchases = await purchaseRepo.find({
+      where: { user: { id: user.id } },
+    });
+    const purchasesArray = [];
+    for (const purchase of purchases) {
+      const { saved_name, purchased_credits, price_paid, purchase_at } =
+        purchase;
+      purchasesArray.push({
+        name:saved_name,
+        purchased_credits,
+        price_paid,
+        purchase_at,
+      });
+    }
+    return res.status(200).json({
+      status: "success",
+      data: purchasesArray,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(createError(500, "獲取購買紀錄失敗"));
+  }
+};
+module.exports = {
+  signUp,
+  login,
+  getProfile,
+  updateProfile,
+  updatePassword,
+  getCreditPackages,
+};

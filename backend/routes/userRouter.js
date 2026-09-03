@@ -7,4 +7,5 @@ router.post("/login", userController.login);
 router.get("/profile", authMiddleware, userController.getProfile);
 router.put("/profile", authMiddleware, userController.updateProfile);
 router.put("/password", authMiddleware, userController.updatePassword);
+router.get('/credit-package',authMiddleware,userController.getCreditPackages)
 module.exports = router;
