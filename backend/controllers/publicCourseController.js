@@ -39,7 +39,7 @@ const getCourses = async (req, res, next) => {
       data: coursesArray,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return next(createError(500, "取得進行中課程列表失敗"));
   }
 };
