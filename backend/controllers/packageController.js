@@ -1,5 +1,6 @@
 const appDataSource = require("../db/dataSource");
 const packageSchema = require("../db/entities/Package");
+const purchaseSchema = require("../db/entities/Purchase");
 const createError = require("../utils/createError");
 const isUuid = require("../utils/isUuid");
 
@@ -92,4 +93,37 @@ const deletePackage = async (req, res, next) => {
   }
 };
 
-module.exports = { getPackages, postPackage, deletePackage };
+const purchasePackage = async (req, res, next) => {
+  try {
+    const { creditPackageId } = req.params;
+    const user = req.user;
+    if (!isUuid(creditPackageId)) {
+      return next(createError(400, "ID錯誤"));
+    }
+    const packageRepo = appDataSource.getRepository(packageSchema);
+    const package = await packageRepo.findOneBy({
+      id: creditPackageId,
+    });
+    if (!package) {
+      return next(createError(400, "ID錯誤"));
+    }
+    const purchaseRepo = appDataSource.getRepository(purchaseSchema);
+    await purchaseRepo.save({
+      saved_name: package.name,
+      price_paid: package.price,
+      purchased_credits: package.credit_amount,
+      package: { id: package.id },
+      user: { id: user.id },
+    });
+
+    return res.status(200).json({
+      status: "success",
+      data: null,
+    });
+ } catch (error) {
+    console.error(error);
+    return next(createError(500, "購買課程失敗"));
+  }
+};
+
+module.exports = { getPackages, postPackage, deletePackage, purchasePackage };
