@@ -1,39 +1,39 @@
 const express = require("express");
 const router = express.Router();
-const adminCoachController = require("../controllers/adminCoachController");
+const coachCourseController = require("../controllers/coachCourseController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const requireCoach = require("../middlewares/requireCoach");
 router.post(
   "/courses",
   authMiddleware,
   requireCoach,
-  adminCoachController.openCourse,
+  coachCourseController.openCourse,
 );
-router.post("/:userId", adminCoachController.updateUserToCoach);
-router.get("/", authMiddleware, requireCoach, adminCoachController.getProfile);
+router.post("/:userId", coachCourseController.updateUserToCoach);
+router.get("/", authMiddleware, requireCoach, coachCourseController.getProfile);
 router.put(
   "/",
   authMiddleware,
   requireCoach,
-  adminCoachController.updateProfile,
+  coachCourseController.updateProfile,
 );
 router.get(
   "/courses",
   authMiddleware,
   requireCoach,
-  adminCoachController.getCoachCourses,
+  coachCourseController.getCoachCourses,
 );
 
 router.get(
   "/courses/:courseId",
   authMiddleware,
-  adminCoachController.getCoachCourse,
+  coachCourseController.getCoachCourse,
 );
 
 router.put(
   "/courses/:courseId",
   authMiddleware,
-  adminCoachController.updateCoachCourse,
+  coachCourseController.updateCoachCourse,
 );
 
 module.exports = router;
