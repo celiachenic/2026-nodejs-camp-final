@@ -1,6 +1,7 @@
 const appDataSource = require("../db/dataSource");
 const userSchema = require("../db/entities/User");
 const purchaseSchema = require("../db/entities/Purchase");
+const bookingSchema = require("../db/entities/Booking");
 const createError = require("../utils/createError");
 const emailValidator = require("../utils/emailValidator");
 const passwordValidator = require("../utils/passwordValidator");
@@ -247,7 +248,7 @@ const getCreditPackages = async (req, res, next) => {
       const { saved_name, purchased_credits, price_paid, purchase_at } =
         purchase;
       purchasesArray.push({
-        name:saved_name,
+        name: saved_name,
         purchased_credits,
         price_paid,
         purchase_at,
@@ -262,6 +263,58 @@ const getCreditPackages = async (req, res, next) => {
     return next(createError(500, "獲取購買紀錄失敗"));
   }
 };
+
+//獲取課表和剩餘堂數
+const getCourses = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const purchaseRepo = appDataSource.getRepository(purchaseSchema);
+    const purchases = await purchaseRepo.find({
+      where: { user: { id: user.id } },
+    });
+    let credits = 0;
+    for (const purchase of purchases) {
+      credits += purchase.purchased_credits;
+    }
+    const bookingRepo = appDataSource.getRepository(bookingSchema);
+    const bookings = await bookingRepo.find({
+      where: { user: { id: user.id } },
+      relations: {
+        course: { coach: { user: true } },
+      },
+      order: { course: { start_at: "ASC" } },
+    });
+
+    const validBookings = bookings.filter(
+      (booking) => booking.cancelled_at === null,
+    ).length;
+
+    const bookingsArray = [];
+    for (const booking of bookings) {
+      const { course, cancelled_at } = booking;
+      bookingsArray.push({
+        course_id: course.id,
+        name: course.name,
+        start_at: course.start_at,
+        end_at: course.end_at,
+        meeting_url: course.meeting_url,
+        coach_name: course.coach.user.name,
+        cancelled_at,
+      });
+    }
+    return res.status(200).json({
+      status: "success",
+      data: {
+        credit_remain: credits - validBookings,
+        credit_usage: validBookings,
+        course_booking: bookingsArray,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return next(createError(500, "取得課表和剩餘堂數失敗"));
+  }
+};
 module.exports = {
   signUp,
   login,
@@ -269,4 +322,5 @@ module.exports = {
   updateProfile,
   updatePassword,
   getCreditPackages,
+  getCourses,
 };
