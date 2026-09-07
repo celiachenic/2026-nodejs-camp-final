@@ -1,10 +1,12 @@
 const appDataSource = require("../db/dataSource");
 const userSchema = require("../db/entities/User");
 const purchaseSchema = require("../db/entities/Purchase");
-const bookingSchema = require("../db/entities/Booking");
 const createError = require("../utils/createError");
 const emailValidator = require("../utils/emailValidator");
 const passwordValidator = require("../utils/passwordValidator");
+const getUserCredits = require("../services/creditService");
+const getUserBookings = require("../services/bookingService");
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -268,26 +270,10 @@ const getCreditPackages = async (req, res, next) => {
 const getCourses = async (req, res, next) => {
   try {
     const user = req.user;
-    const purchaseRepo = appDataSource.getRepository(purchaseSchema);
-    const purchases = await purchaseRepo.find({
-      where: { user: { id: user.id } },
-    });
-    let credits = 0;
-    for (const purchase of purchases) {
-      credits += purchase.purchased_credits;
-    }
-    const bookingRepo = appDataSource.getRepository(bookingSchema);
-    const bookings = await bookingRepo.find({
-      where: { user: { id: user.id } },
-      relations: {
-        course: { coach: { user: true } },
-      },
-      order: { course: { start_at: "ASC" } },
-    });
 
-    const validBookings = bookings.filter(
-      (booking) => booking.cancelled_at === null,
-    ).length;
+    const { creditRemain, creditUsage } = await getUserCredits(user.id);
+
+    const bookings = await getUserBookings(user.id);
 
     const bookingsArray = [];
     for (const booking of bookings) {
@@ -305,13 +291,13 @@ const getCourses = async (req, res, next) => {
     return res.status(200).json({
       status: "success",
       data: {
-        credit_remain: credits - validBookings,
-        credit_usage: validBookings,
+        credit_remain: creditRemain,
+        credit_usage: creditUsage,
         course_booking: bookingsArray,
       },
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return next(createError(500, "取得課表和剩餘堂數失敗"));
   }
 };
