@@ -102,4 +102,37 @@ const bookCourse = async (req, res, next) => {
     return next(createError(500, "報名課程失敗"));
   }
 };
-module.exports = { getCourses, bookCourse };
+
+const cancelBooking = async (req, res, next) => {
+  try {
+    const { courseId } = req.params;
+    const user = req.user;
+    if (!isUuid(courseId)) {
+      return next(createError(400, "ID錯誤"));
+    }
+
+    const bookingRepo = appDataSource.getRepository(bookingSchema);
+    const booking = await bookingRepo.findOne({
+      where: {
+        course: { id: courseId },
+        user: { id: user.id },
+        cancelled_at: IsNull(),
+      },
+    });
+    if (!booking) {
+      return next(createError(400, "ID錯誤"));
+    }
+
+    booking.cancelled_at = new Date();
+    await bookingRepo.save(booking);
+
+    return res.status(200).json({
+      status: "success",
+      data: null,
+    });
+  } catch (error) {
+    console.log(error);
+    return next(createError(500, "取消失敗"));
+  }
+};
+module.exports = { getCourses, bookCourse, cancelBooking };
