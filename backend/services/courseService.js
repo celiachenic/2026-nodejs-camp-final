@@ -1,5 +1,5 @@
 const courseSchema = require("../db/entities/Course");
-const getCoachCourses = async (coachId) => {
+const getCoursesByCoachId = async (coachId) => {
   const courseRepo = appDataSource.getRepository(courseSchema);
   const courses = await courseRepo.find({
     where: { coach: { id: coachId } },
@@ -7,4 +7,4 @@ const getCoachCourses = async (coachId) => {
   return courses;
 };
 
-module.exports = { getCoachCourses };
+module.exports = { getCoursesByCoachId };
