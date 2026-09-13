@@ -185,13 +185,10 @@ const updateProfile = async (req, res, next) => {
 };
 
 //取得教練所有課程
-const getCoachCourses = async (req, res, next) => {
+const getCoachUnfinishedCourses = async (req, res, next) => {
   try {
     const coach = req.coach;
-    const courseRepo = appDataSource.getRepository(courseSchema);
-    const courses = await courseRepo.find({
-      where: { coach: { id: coach.id } },
-    });
+    const courses = getCoachCourse(coach.id);
     if (courses.length === 0) {
       return res.status(200).json({
         status: "success",
@@ -353,13 +350,14 @@ const getCoachCourse = async (req, res, next) => {
   } catch (error) {
     console.error(error);
     return next(createError(500, "查詢課程失敗"));
-  }};
+  }
+};
 
 // 更新單堂開課資料
- const updateCoachCourse = async (req, res, next) => {
-   try {
-     const user = req.user;
-     const { courseId } = req.params;
+const updateCoachCourse = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const { courseId } = req.params;
     const {
       skill_id,
       name,
@@ -421,18 +419,21 @@ const getCoachCourse = async (req, res, next) => {
         course: updatedCourse,
       },
     });
-   } catch (error) {
-    console.error(error)
-     return next(createError(500, "更新課程失敗"));
-   }
- };
+  } catch (error) {
+    console.error(error);
+    return next(createError(500, "更新課程失敗"));
+  }
+};
+
+
 
 module.exports = {
   updateUserToCoach,
   getProfile,
   updateProfile,
-  getCoachCourses,
+  getCoachUnfinishedCourses,
   openCourse,
   getCoachCourse,
   updateCoachCourse,
+  getRevenue,
 };

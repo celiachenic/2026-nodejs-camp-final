@@ -21,7 +21,7 @@ router.get(
   "/courses",
   authMiddleware,
   requireCoach,
-  coachCourseController.getCoachCourses,
+  coachCourseController.getCoachUnfinishedCourses,
 );
 
 router.get(
@@ -35,5 +35,6 @@ router.put(
   authMiddleware,
   coachCourseController.updateCoachCourse,
 );
+
 
 module.exports = router;
