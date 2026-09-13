@@ -1,3 +1,4 @@
+const appDataSource = require('../db/dataSource')
 const courseSchema = require("../db/entities/Course");
 const getCoursesByCoachId = async (coachId) => {
   const courseRepo = appDataSource.getRepository(courseSchema);
