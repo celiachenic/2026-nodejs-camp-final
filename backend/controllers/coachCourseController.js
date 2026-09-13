@@ -8,7 +8,9 @@ const bookingSchema = require("../db/entities/Booking");
 const isUuid = require("../utils/isUuid");
 const isUtcIsoString = require("../utils/isUtcIsoString");
 const { IsNull } = require("typeorm");
-
+const monthValidator = require("../utils/monthValidator");
+const { getCourseAveragePrice } = require("../services/packageService");
+const { getCoursesByCoachId } = require("../services/courseService");
 //升級使用者成教練
 const updateUserToCoach = async (req, res, next) => {
   try {
@@ -188,7 +190,7 @@ const updateProfile = async (req, res, next) => {
 const getCoachUnfinishedCourses = async (req, res, next) => {
   try {
     const coach = req.coach;
-    const courses = getCoachCourse(coach.id);
+    const courses = await getCoursesByCoachId(coach.id);
     if (courses.length === 0) {
       return res.status(200).json({
         status: "success",
@@ -425,7 +427,86 @@ const updateCoachCourse = async (req, res, next) => {
   }
 };
 
+//計算特定月分營收
+const getRevenue = async (req, res, next) => {
+  try {
+    const { month } = req.query;
+    const { coach } = req;
+    if (!monthValidator(month)) {
+      return next(createError(400, "欄位未填寫正確"));
+    }
+    const coachCourses = await getCoursesByCoachId(coach.id);
+    if (coachCourses.length === 0) {
+      return res.status(200).json({
+        status: "success",
+        data: {
+          total: {
+            revenue: 0,
+            participants: 0,
+            course_count: 0,
+          },
+        },
+      });
+    }
+    const months = [
+      "january",
+      "february",
+      "march",
+      "april",
+      "may",
+      "june",
+      "july",
+      "august",
+      "september",
+      "october",
+      "november",
+      "december",
+    ];
 
+    // PostgreSQL EXTRACT 的月份是 1～12
+    const targetMonth = months.indexOf(month) + 1;
+    const targetYear = new Date().getFullYear();
+
+    const bookingQuery = appDataSource
+      .getRepository(bookingSchema)
+      .createQueryBuilder("booking")
+      .innerJoinAndSelect("booking.course", "course")
+      .innerJoin("course.coach", "coach")
+      .innerJoinAndSelect("booking.user", "user")
+      .where("coach.id = :coachId", { coachId: coach.id })
+      .andWhere("booking.cancelled_at is NULL")
+      .andWhere("EXTRACT(YEAR FROM booking.created_at) = :year", {
+        year: targetYear,
+      })
+      .andWhere("EXTRACT(Month FROM booking.created_at) = :month", {
+        month: targetMonth,
+      });
+    const bookings = await bookingQuery.clone().getMany();
+
+    const participantResult = await bookingQuery
+      .clone()
+      .select('COUNT(DISTINCT booking."user_id")', "participants")
+      .getRawOne();
+
+    const courseAveragePrice = await getCourseAveragePrice();
+    const participants = Number(participantResult.participants);
+    const revenue = Math.floor(courseAveragePrice * bookings.length);
+
+    return res.status(200).json({
+      status: "success",
+      data: {
+        total: {
+          revenue,
+          participants,
+          course_count: bookings.length,
+        },
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return next(createError(500, "取得營收失敗"));
+  }
+};
 
 module.exports = {
   updateUserToCoach,

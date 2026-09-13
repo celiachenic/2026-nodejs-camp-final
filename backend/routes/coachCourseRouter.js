@@ -36,5 +36,10 @@ router.put(
   coachCourseController.updateCoachCourse,
 );
 
-
+router.get(
+  "/revenue",
+  authMiddleware,
+  requireCoach,
+  coachCourseController.getRevenue,
+);
 module.exports = router;
